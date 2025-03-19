@@ -9,7 +9,7 @@ version:        0.1.0.0
 description:    YAML linter/formatter
 homepage:       https://github.com/senysenyseny16/omle#readme
 bug-reports:    https://github.com/senysenyseny16/omle/issues
-author:         Arseny
+author:         Arsenii Ianchenko
 maintainer:     arseny@protonmail.com
 copyright:      2025 Arsenii
 license:        BSD-3-Clause
@@ -24,7 +24,6 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
       Omle.AST
       Omle.Parser
   other-modules:
@@ -37,6 +36,7 @@ library
   build-depends:
       base >=4.7 && <5
     , megaparsec
+    , optparse-applicative
   default-language: Haskell2010
 
 executable omle-exe
@@ -52,6 +52,7 @@ executable omle-exe
       base >=4.7 && <5
     , megaparsec
     , omle
+    , optparse-applicative
   default-language: Haskell2010
 
 test-suite omle-test
@@ -70,4 +71,5 @@ test-suite omle-test
     , hspec
     , megaparsec
     , omle
+    , optparse-applicative
   default-language: Haskell2010
