@@ -1,12 +1,15 @@
-module Omle.Parser (parseInt, parseBool, parseScalar) where
+{-# LANGUAGE OverloadedStrings #-}
 
-import Data.Void
+module Omle.Parser (parseInt, parseBool, parseScalar) where
+    
 import Omle.AST
 import Text.Megaparsec
 import Text.Megaparsec.Char (string)
 import qualified Text.Megaparsec.Char.Lexer as L
+import Data.Text (Text)
+import Data.Void
 
-type Parser = Parsec Void String
+type Parser = Parsec Void Text
 
 parseInt :: Parser YamlScalar
 parseInt = YamlInt <$> L.decimal
