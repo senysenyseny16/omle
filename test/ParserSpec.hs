@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings #-}
 module ParserSpec (spec) where
 
 import Omle.AST (YamlScalar (YamlBool, YamlInt))
