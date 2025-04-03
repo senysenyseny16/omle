@@ -1,15 +1,21 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Omle.Parser (parseFloat, parseInt, parseBool, parseScalar) where
+module Omle.Parser (sc, parseFloat, parseInt, parseBool, parseScalar) where
     
 import Omle.AST
 import Text.Megaparsec
-import Text.Megaparsec.Char (string)
+import Text.Megaparsec.Char (string, space1)
 import qualified Text.Megaparsec.Char.Lexer as L
 import Data.Text (Text)
 import Data.Void
 
 type Parser = Parsec Void Text
+
+sc :: Parser () -- space consumer
+sc = L.space 
+    space1 
+    (L.skipLineComment "#") 
+    empty
 
 parseFloat :: Parser YamlScalar
 parseFloat = YamlFloat <$> L.float

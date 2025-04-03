@@ -2,12 +2,19 @@
 module ParserSpec (spec) where
 
 import Omle.AST
-import Omle.Parser (parseFloat, parseInt, parseBool, parseScalar)
+import Omle.Parser (sc, parseFloat, parseInt, parseBool, parseScalar)
 import Test.Hspec
+import Test.Hspec.Megaparsec
 import Text.Megaparsec
 
 spec :: Spec
 spec = do
+  describe "spaceConsumer" $ do
+    it "skips spaces" $ do 
+      parse sc "" `shouldSucceedOn` "      "
+    it "skips comment line" $ do 
+      parse sc "" `shouldSucceedOn` "# a comment line"
+
   describe "parseFloat" $ do
     it "parses float" $ do
       parse parseFloat "" "12.34" `shouldBe` Right (YamlFloat 12.34)
