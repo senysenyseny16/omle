@@ -1,30 +1,48 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Omle.Parser (sc, parseFloat, parseInt, parseBool, parseScalar) where
-    
-import Omle.AST
-import Text.Megaparsec
-import Text.Megaparsec.Char (string, space1)
-import qualified Text.Megaparsec.Char.Lexer as L
+module Omle.Parser (sc, parseFloat, parseInt, parseBool, parseScalar, parseScalars) where
+
 import Data.Text (Text)
 import Data.Void
+import Omle.AST
+import Text.Megaparsec
+import Text.Megaparsec.Char (space1, string)
+import qualified Text.Megaparsec.Char.Lexer as L
 
 type Parser = Parsec Void Text
 
 sc :: Parser () -- space consumer
-sc = L.space 
-    space1 
-    (L.skipLineComment "#") 
+sc =
+  L.space
+    space1
+    (L.skipLineComment "#")
     empty
 
+lexeme :: Parser a -> Parser a
+lexeme = L.lexeme sc
+
+symbol :: Text -> Parser Text
+symbol    = L.symbol sc
+parens    = between (symbol "(") (symbol ")")
+braces    = between (symbol "{") (symbol "}")
+angles    = between (symbol "<") (symbol ">")
+brackets  = between (symbol "[") (symbol "]")
+semicolon = symbol ";"
+comma     = symbol ","
+colon     = symbol ":"
+dot       = symbol "."
+
 parseFloat :: Parser YamlScalar
-parseFloat = YamlFloat <$> L.float
+parseFloat = YamlFloat <$> lexeme L.float
 
 parseInt :: Parser YamlScalar
-parseInt = YamlInt <$> L.decimal
+parseInt = YamlInt <$> lexeme L.decimal
 
 parseBool :: Parser YamlScalar
-parseBool = (string "true" >> return (YamlBool True)) <|> (string "false" >> return (YamlBool False))
+parseBool = (lexeme (string "true") >> return (YamlBool True)) <|> (lexeme (string "false") >> return (YamlBool False))
 
 parseScalar :: Parser YamlScalar
 parseScalar = try parseFloat <|> try parseInt <|> try parseBool
+
+parseScalars :: Parser [YamlScalar]
+parseScalars = brackets (parseScalar `sepBy` comma)
