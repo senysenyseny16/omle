@@ -1,13 +1,15 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Omle.Parser (sc, parseFloat, parseInt, parseBool, parseScalar, parseSequence) where
+module Omle.Parser (sc, parseFloat, parseInt, parseBool, parseScalar, parseSequence, parseMapping, parseKey) where
 
 import Data.Text (Text)
 import Data.Void
 import Omle.AST
 import Text.Megaparsec
-import Text.Megaparsec.Char (space1, string)
+import Text.Megaparsec.Char (space1, string, char)
 import qualified Text.Megaparsec.Char.Lexer as L
+import Control.Applicative hiding (many, some)
+
 
 type Parser = Parsec Void Text
 
@@ -48,7 +50,17 @@ parseScalar' :: Parser YamlValue
 parseScalar' = YamlScalar <$> parseScalar
 
 parseSequence :: Parser YamlValue
-parseSequence = YamlSequence <$> brackets (parseYamlValue `sepBy` comma)
+parseSequence = YamlSequence <$> brackets (choice [parseSequence, parseScalar'] `sepBy` comma)
 
-parseYamlValue :: Parser YamlValue
-parseYamlValue = choice [parseSequence, parseScalar']
+parseKey :: Parser [Char]
+parseKey = manyTill (lexeme L.charLiteral) colon
+
+parseMapping :: Parser YamlValue
+parseMapping = do
+  key <- try parseKey
+  value <- choice [parseMapping, parseSequence, parseScalar']
+  return (YamlMapping (key, value))
+
+ -- (key,value) where
+ -- key = lexeme (many L.charLiteral) `endBy` colon
+  --value = many L.charLiteral `endBy` symbol eol

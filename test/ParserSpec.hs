@@ -3,7 +3,7 @@
 module ParserSpec (spec) where
 
 import Omle.AST
-import Omle.Parser (parseBool, parseFloat, parseInt, parseScalar, parseSequence, sc)
+import Omle.Parser (parseBool, parseFloat, parseInt, parseScalar, parseSequence, parseMapping, sc)
 import Test.Hspec
 import Test.Hspec.Megaparsec
 import Text.Megaparsec
@@ -39,7 +39,7 @@ spec = do
       parse parseScalar "" "false " `shouldBe` Right (YamlBool False)
 
   describe "parseSequence" $ do
-    it "parses list of scalars" $ do
+    it "parses nested list of scalars" $ do
       parse
         parseSequence
         ""
@@ -52,3 +52,21 @@ spec = do
                 YamlScalar (YamlInt 1)
               ]
           )
+
+  describe "parseMapping" $ do
+    it "parses nested mappings" $ do
+      parse
+        parseMapping
+        ""
+        "key  : key1:[44, false]"
+        `shouldBe` Right
+          ( YamlMapping ("key", 
+              YamlMapping ("key1",
+                YamlSequence 
+                [ YamlScalar (YamlInt 44)
+                , YamlScalar (YamlBool False)
+                ]
+              )
+            )
+          )
+              
