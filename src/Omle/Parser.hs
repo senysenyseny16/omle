@@ -44,5 +44,8 @@ parseBool = (lexeme (string "true") >> return (YamlBool True)) <|> (lexeme (stri
 parseScalar :: Parser YamlScalar
 parseScalar = try parseFloat <|> try parseInt <|> try parseBool
 
-parseScalars :: Parser [YamlScalar]
-parseScalars = brackets (parseScalar `sepBy` comma)
+parseScalar' :: Parser YamlValue
+parseScalar' = YamlScalar <$> parseScalar
+
+parseScalars :: Parser YamlValue
+parseScalars = YamlSequence <$> brackets (parseScalar' `sepBy` comma)

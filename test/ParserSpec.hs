@@ -1,8 +1,9 @@
 {-# LANGUAGE OverloadedStrings #-}
+
 module ParserSpec (spec) where
 
 import Omle.AST
-import Omle.Parser (sc, parseFloat, parseInt, parseBool, parseScalar, parseScalars)
+import Omle.Parser (parseBool, parseFloat, parseInt, parseScalar, parseScalars, sc)
 import Test.Hspec
 import Test.Hspec.Megaparsec
 import Text.Megaparsec
@@ -10,9 +11,9 @@ import Text.Megaparsec
 spec :: Spec
 spec = do
   describe "spaceConsumer" $ do
-    it "skips spaces" $ do 
+    it "skips spaces" $ do
       parse sc "" `shouldSucceedOn` "      "
-    it "skips comment line" $ do 
+    it "skips comment line" $ do
       parse sc "" `shouldSucceedOn` "# a comment line"
 
   describe "parseFloat" $ do
@@ -39,4 +40,14 @@ spec = do
 
   describe "parseScalars" $ do
     it "parses list of scalars" $ do
-      parse parseScalars "" "[32.456 ,  false,  1 ]" `shouldBe` Right ([YamlFloat 32.456,YamlBool False,YamlInt 1])
+      parse
+        parseScalars
+        ""
+        "[32.456 ,  false,  1 ]"
+        `shouldBe` Right
+          ( YamlSequence
+              [ YamlScalar (YamlFloat 32.456),
+                YamlScalar (YamlBool False),
+                YamlScalar (YamlInt 1)
+              ]
+          )
