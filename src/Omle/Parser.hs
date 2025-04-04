@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Omle.Parser (sc, parseFloat, parseInt, parseBool, parseScalar, parseScalars) where
+module Omle.Parser (sc, parseFloat, parseInt, parseBool, parseScalar, parseSequence) where
 
 import Data.Text (Text)
 import Data.Void
@@ -47,5 +47,8 @@ parseScalar = try parseFloat <|> try parseInt <|> try parseBool
 parseScalar' :: Parser YamlValue
 parseScalar' = YamlScalar <$> parseScalar
 
-parseScalars :: Parser YamlValue
-parseScalars = YamlSequence <$> brackets (parseScalar' `sepBy` comma)
+parseSequence :: Parser YamlValue
+parseSequence = YamlSequence <$> brackets (parseYamlValue `sepBy` comma)
+
+parseYamlValue :: Parser YamlValue
+parseYamlValue = choice [parseSequence, parseScalar']

@@ -3,7 +3,7 @@
 module ParserSpec (spec) where
 
 import Omle.AST
-import Omle.Parser (parseBool, parseFloat, parseInt, parseScalar, parseScalars, sc)
+import Omle.Parser (parseBool, parseFloat, parseInt, parseScalar, parseSequence, sc)
 import Test.Hspec
 import Test.Hspec.Megaparsec
 import Text.Megaparsec
@@ -38,16 +38,17 @@ spec = do
     it "parses bool" $ do
       parse parseScalar "" "false " `shouldBe` Right (YamlBool False)
 
-  describe "parseScalars" $ do
+  describe "parseSequence" $ do
     it "parses list of scalars" $ do
       parse
-        parseScalars
+        parseSequence
         ""
-        "[32.456 ,  false,  1 ]"
+        "[32.456 ,  false, [7, true],  1 ]"
         `shouldBe` Right
           ( YamlSequence
               [ YamlScalar (YamlFloat 32.456),
                 YamlScalar (YamlBool False),
+                YamlSequence [YamlScalar (YamlInt 7), YamlScalar (YamlBool True)],
                 YamlScalar (YamlInt 1)
               ]
           )
