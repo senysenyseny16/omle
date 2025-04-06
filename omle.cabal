@@ -25,7 +25,9 @@ source-repository head
 library
   exposed-modules:
       Omle.AST
-      Omle.Parser
+      Omle.Parser.Common
+      Omle.Parser.YamlScalar
+      Omle.Parser.YamlValue
   other-modules:
       Paths_omle
   autogen-modules:
@@ -63,7 +65,9 @@ test-suite omle-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      ParserSpec
+      Parser.CommonSpec
+      Parser.YamlScalarSpec
+      Parser.YamlValueSpec
       Paths_omle
   autogen-modules:
       Paths_omle
