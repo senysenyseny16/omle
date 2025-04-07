@@ -7,29 +7,50 @@ module Omle.Parser.YamlValue
 where
 
 import Omle.AST
-import Omle.Parser.Common (Parser, braces, brackets, colon, comma, lexeme)
+import Omle.Parser.Common (Parser, braces, brackets, colon, comma, dash, parseKey)
 import qualified Omle.Parser.YamlScalar as YamlScalar
 import Text.Megaparsec
-import Text.Megaparsec.Char (alphaNumChar)
+
+-- import qualified Text.Megaparsec.Char.Lexer as L
 
 parseYamlValue :: Parser YamlValue
-parseYamlValue = choice [parseScalar, parseSequence, parseMapping]
+parseYamlValue = try parseScalar <|> try parseSequence <|> parseMapping
 
 parseScalar :: Parser YamlValue
 parseScalar = YamlScalar <$> YamlScalar.parseScalar
 
 parseSequence :: Parser YamlValue
-parseSequence = YamlSequence <$> brackets (parseYamlValue `sepBy` comma)
+parseSequence = try parseFlowSequence <|> parseBlockSequence
 
 parseMapping :: Parser YamlValue
-parseMapping = YamlMapping <$> braces (parseKeyValue `sepBy` comma)
+parseMapping = try parseFlowMapping <|> parseBlockMapping
 
-parseKey :: Parser [Char]
-parseKey = lexeme (some alphaNumChar)
+parseFlowSequence :: Parser YamlValue
+parseFlowSequence = YamlSequence <$> brackets (parseYamlValue `sepBy` comma)
 
-parseKeyValue :: Parser (String, YamlValue)
-parseKeyValue = do
-  key <- try parseKey
-  _ <- colon
-  value <- parseYamlValue
-  return (key, value)
+parseBlockSequence :: Parser YamlValue
+parseBlockSequence = YamlSequence <$> some parseBlockSequenceItem
+  where
+    parseBlockSequenceItem = do
+      -- _ <- L.indentGuard sc GT pos1
+      _ <- dash
+      parseYamlValue
+
+parseFlowMapping :: Parser YamlValue
+parseFlowMapping = YamlMapping <$> braces (parseFlowMappingItem `sepBy` comma)
+  where
+    parseFlowMappingItem = do
+      key <- parseKey
+      _ <- colon
+      value <- parseYamlValue
+      return (key, value)
+
+parseBlockMapping :: Parser YamlValue
+parseBlockMapping = YamlMapping <$> some parseBlockMappingItem
+  where
+    parseBlockMappingItem = do
+      -- _ <- L.indentGuard sc GT pos1
+      key <- parseKey
+      _ <- colon
+      val <- parseYamlValue
+      return (key, val)

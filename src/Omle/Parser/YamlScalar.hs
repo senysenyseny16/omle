@@ -16,7 +16,7 @@ import Text.Megaparsec.Char (string)
 import qualified Text.Megaparsec.Char.Lexer as L
 
 parseScalar :: Parser YamlScalar
-parseScalar = try parseFloat <|> try parseInt <|> try parseBool
+parseScalar = try parseFloat <|> try parseInt <|> parseBool
 
 parseFloat :: Parser YamlScalar
 parseFloat = YamlFloat <$> lexeme L.float
