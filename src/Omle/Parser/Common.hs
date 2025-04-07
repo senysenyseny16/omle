@@ -16,9 +16,10 @@ where
 
 import Control.Applicative hiding (many, some)
 import Data.Text (Text)
+import Data.Char (isAlphaNum)
 import Data.Void
 import Text.Megaparsec
-import Text.Megaparsec.Char (alphaNumChar, space1)
+import Text.Megaparsec.Char (space1)
 import qualified Text.Megaparsec.Char.Lexer as L
 
 type Parser = Parsec Void Text
@@ -47,5 +48,5 @@ braces = between (symbol "{") (symbol "}")
 brackets :: Parser a -> Parser a
 brackets = between (symbol "[") (symbol "]")
 
-parseKey :: Parser [Char]
-parseKey = lexeme (some alphaNumChar)
+parseKey :: Parser Text
+parseKey = lexeme (takeWhile1P Nothing isAlphaNum)

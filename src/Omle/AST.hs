@@ -1,9 +1,11 @@
 module Omle.AST (YamlValue (..), YamlScalar (..)) where
 
+import Data.Text (Text)
+
 data YamlValue
   = YamlScalar YamlScalar
   | YamlSequence [YamlValue]
-  | YamlMapping [(String, YamlValue)]
+  | YamlMapping [(Text, YamlValue)]
   deriving (Eq, Show)
 
 data YamlScalar
