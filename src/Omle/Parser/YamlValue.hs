@@ -1,3 +1,5 @@
+{-# LANGUAGE TupleSections     #-}
+
 module Omle.Parser.YamlValue
   ( parseYamlValue,
     parseSequence,
@@ -7,15 +9,14 @@ module Omle.Parser.YamlValue
 where
 
 import Omle.AST
-import Omle.Parser.Common (Parser, braces, brackets, colon, comma, dash, parseKey)
+import Omle.Parser.Common (Parser, scn, braces, brackets, colon, comma, dash, parseKey)
 import qualified Omle.Parser.YamlScalar as YamlScalar
 import Text.Megaparsec
-
--- import qualified Text.Megaparsec.Char.Lexer as L
+import Text.Megaparsec.Char (eol)
+import qualified Text.Megaparsec.Char.Lexer as L
 
 parseYamlValue :: Parser YamlValue
 parseYamlValue = try parseScalar <|> try parseSequence <|> parseMapping
-
 parseScalar :: Parser YamlValue
 parseScalar = YamlScalar <$> YamlScalar.parseScalar
 
@@ -30,11 +31,11 @@ parseFlowSequence = YamlSequence <$> brackets (parseYamlValue `sepBy` comma)
 
 parseBlockSequence :: Parser YamlValue
 parseBlockSequence = YamlSequence <$> some parseBlockSequenceItem
-  where
-    parseBlockSequenceItem = do
-      -- _ <- L.indentGuard sc GT pos1
-      _ <- dash
-      parseYamlValue
+
+parseBlockSequenceItem :: Parser YamlValue
+parseBlockSequenceItem = do
+  _ <- dash
+  parseYamlValue <* eol
 
 parseFlowMapping :: Parser YamlValue
 parseFlowMapping = YamlMapping <$> braces (parseFlowMappingItem `sepBy` comma)
@@ -46,11 +47,19 @@ parseFlowMapping = YamlMapping <$> braces (parseFlowMappingItem `sepBy` comma)
       return (key, value)
 
 parseBlockMapping :: Parser YamlValue
-parseBlockMapping = YamlMapping <$> some parseBlockMappingItem
+parseBlockMapping = YamlMapping <$> (try parseNestedBlockMapping <|> some parseBlockMappingItem)
   where
     parseBlockMappingItem = do
-      -- _ <- L.indentGuard sc GT pos1
       key <- parseKey
       _ <- colon
-      val <- parseYamlValue
+      val <- parseYamlValue <* eol
       return (key, val)
+    parseNestedBlockMapping = L.nonIndented scn (L.indentBlock scn p)
+      where
+        p = do
+          key <- parseKey
+          _ <- colon
+          return (L.IndentSome Nothing (return . (\x -> [(key, YamlSequence x)])) parseYamlValue)
+
+
+

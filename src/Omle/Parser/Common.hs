@@ -2,6 +2,8 @@
 
 module Omle.Parser.Common
   ( Parser,
+    lineComment,
+    scn,
     sc,
     lexeme,
     symbol,
@@ -10,11 +12,12 @@ module Omle.Parser.Common
     dash,
     braces,
     brackets,
-    parseKey,
+    parseKey
   )
 where
 
 import Control.Applicative hiding (many, some)
+import Control.Monad (void)
 import Data.Text (Text)
 import Data.Char (isAlphaNum)
 import Data.Void
@@ -24,8 +27,18 @@ import qualified Text.Megaparsec.Char.Lexer as L
 
 type Parser = Parsec Void Text
 
-sc :: Parser () -- space consumer
-sc = L.space space1 (L.skipLineComment "#") empty
+lineComment :: Parser ()
+lineComment = L.skipLineComment "#"
+
+scn :: Parser ()
+scn = L.space space1 lineComment empty
+
+sc :: Parser ()
+sc = L.space (void $ takeWhile1P Nothing f) lineComment empty
+  where
+    f x = x == ' ' || x == '\t'
+--sc :: Parser () -- space consumer
+--sc = L.space space1 (L.skipLineComment "#") empty
 
 lexeme :: Parser a -> Parser a
 lexeme = L.lexeme sc
