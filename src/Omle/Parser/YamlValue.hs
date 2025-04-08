@@ -24,7 +24,7 @@ parseSequence :: Parser YamlValue
 parseSequence = try parseFlowSequence <|> parseBlockSequence
 
 parseMapping :: Parser YamlValue
-parseMapping = try parseFlowMapping <|> parseBlockMapping
+parseMapping = try parseNestedMapping <|> try parseComplexMapping <|> try parseFlowMapping <|> parseBlockMapping
 
 parseFlowSequence :: Parser YamlValue
 parseFlowSequence = YamlSequence <$> brackets (parseYamlValue `sepBy` comma)
@@ -47,19 +47,36 @@ parseFlowMapping = YamlMapping <$> braces (parseFlowMappingItem `sepBy` comma)
       return (key, value)
 
 parseBlockMapping :: Parser YamlValue
-parseBlockMapping = YamlMapping <$> (try parseNestedBlockMapping <|> some parseBlockMappingItem)
+parseBlockMapping = YamlMapping <$> some parseBlockMappingItem
   where
     parseBlockMappingItem = do
       key <- parseKey
       _ <- colon
       val <- parseYamlValue <* eol
       return (key, val)
+    {-
     parseNestedBlockMapping = L.nonIndented scn (L.indentBlock scn p)
       where
         p = do
           key <- parseKey
           _ <- colon
           return (L.IndentSome Nothing (return . (\x -> [(key, YamlSequence x)])) parseYamlValue)
+    -}
+parseComplexMapping :: Parser YamlValue
+parseComplexMapping = YamlMapping <$> L.indentBlock scn p
+  where
+    p = do
+      key <- parseKey
+      _ <- colon
+      return (L.IndentSome Nothing (return . (\x -> [(key, YamlSequence x)])) parseYamlValue)
+
+parseNestedMapping :: Parser YamlValue
+parseNestedMapping = YamlMapping <$> L.nonIndented scn (L.indentBlock scn p)
+      where
+        p = do
+          key <- parseKey
+          _ <- colon
+          return (L.IndentSome Nothing (return . (\x -> [(key, YamlSequence x)])) parseComplexMapping)
 
 
 
