@@ -10,6 +10,7 @@ import Omle.AST
 import Omle.Parser.Common (Parser, scn, braces, brackets, colon, comma, dash, parseKey, matchIndent)
 import qualified Omle.Parser.YamlScalar as YamlScalar
 import Text.Megaparsec
+import Text.Megaparsec.Char (newline)
 import qualified Text.Megaparsec.Char.Lexer as L
 
 parseYamlValue :: Parser YamlValue
@@ -43,9 +44,12 @@ parseBlockSequenceItem :: Parser YamlValue
 parseBlockSequenceItem = do
   indent <- L.indentLevel
   _ <- dash
-  (YamlMapping . (:[]) <$> try (parseBlockMappingItem (Just indent))) <|> parseYamlValue -- item can be either a nested mapping or some other value, 
-                                                                                         -- in case of nested mapping the indentation of the leading 
-                                                                                         -- dash should be taken into account
+  nestedMapAhead <- optional (lookAhead (try (parseKey <* colon <* newline))) -- lookAhead to look without actually consuiming the input
+  case nestedMapAhead of 
+    Just _ -> YamlMapping . (:[]) <$> parseBlockMappingItem (Just indent)     -- item can be either a nested mapping or some other value, 
+                                                                              -- in case of nested mapping the indentation of the leading 
+                                                                              -- dash should be taken into account
+    Nothing -> parseYamlValue                                                            
 
 parseFlowMapping :: Parser YamlValue
 parseFlowMapping = YamlMapping <$> braces (parseKeyValue `sepBy` comma)
