@@ -4,7 +4,6 @@ module Omle.Parser.Common
   ( Parser,
     lineComment,
     scn,
-    sc,
     lexeme,
     symbol,
     comma,
@@ -12,7 +11,8 @@ module Omle.Parser.Common
     dash,
     braces,
     brackets,
-    parseKey
+    parseKey,
+    matchIndent
   )
 where
 
@@ -37,20 +37,18 @@ sc :: Parser ()
 sc = L.space (void $ takeWhile1P Nothing f) lineComment empty
   where
     f x = x == ' ' || x == '\t'
---sc :: Parser () -- space consumer
---sc = L.space space1 (L.skipLineComment "#") empty
 
 lexeme :: Parser a -> Parser a
-lexeme = L.lexeme sc
+lexeme = L.lexeme scn
 
 symbol :: Text -> Parser Text
-symbol = L.symbol sc
+symbol = L.symbol scn
 
 comma :: Parser Text
 comma = symbol ","
 
 colon :: Parser Text
-colon = symbol ":"
+colon = L.symbol sc ":" -- not consuming newline after colon, as it defines whether there is nesting or not
 
 dash :: Parser Text
 dash = symbol "-"
@@ -63,3 +61,12 @@ brackets = between (symbol "[") (symbol "]")
 
 parseKey :: Parser Text
 parseKey = lexeme (takeWhile1P Nothing isAlphaNum)
+
+-- Check that current indentation matches the expected one, or fail with error
+matchIndent :: Pos -> Parser ()
+matchIndent expected = do
+  actual <- L.indentLevel
+  if actual == expected
+    then pure ()
+    else 
+      fail $ "Incorrect indentation: expected " ++ show expected ++ ", but got " ++ show actual

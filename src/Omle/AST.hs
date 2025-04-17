@@ -9,7 +9,7 @@ data YamlValue
   deriving (Eq, Show)
 
 data YamlScalar
-  = YamlString String
+  = YamlString Text
   | YamlInt Int
   | YamlFloat Float
   | YamlBool Bool

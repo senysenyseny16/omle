@@ -1,6 +1,7 @@
 module Main (main) where
 
 import qualified Data.Text.IO as DTIO
+import Omle.Parser.Common (scn)
 import Omle.Parser.YamlValue (parseYamlValue)
 import Options.Applicative
 import Text.Megaparsec
@@ -15,7 +16,7 @@ input = Input <$> strArgument (metavar "INPUT_FILE" <> help "File to parse")
 yamlParse :: Input -> IO ()
 yamlParse Input {inputFile = inputFile'} = do
   content <- DTIO.readFile inputFile'
-  case parse parseYamlValue "" content of
+  case parse (scn *> parseYamlValue) "" content of
     Left err -> putStrLn $ "error: " ++ show err
     Right ast -> print ast
 
