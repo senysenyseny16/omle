@@ -23,7 +23,7 @@ parseSequence :: Parser YamlValue
 parseSequence = try parseFlowSequence <|> parseBlockSequence
 
 parseMapping :: Parser YamlValue
-parseMapping = try parseFlowMapping <|> parseBlockMapping -- try parseNestedMapping <|> try parseComplexMapping <|> 
+parseMapping = try parseFlowMapping <|> parseBlockMapping
 
 parseSeqOrMap :: Parser YamlValue
 parseSeqOrMap = try parseSequence <|> parseMapping

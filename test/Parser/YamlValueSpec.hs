@@ -3,9 +3,10 @@
 module Parser.YamlValueSpec (spec) where
 
 import Omle.AST
-import Omle.Parser.YamlValue (parseMapping, parseSequence)
+import Omle.Parser.YamlValue (parseMapping, parseSequence, parseYamlValue)
 import Test.Hspec
 import Text.Megaparsec
+import qualified Data.Text as T
 
 spec :: Spec
 spec = do
@@ -32,3 +33,19 @@ spec = do
         "{key: {key1: [44, false]}}"
         `shouldBe` Right
           (YamlMapping [("key", YamlMapping [("key1", YamlSequence [YamlScalar (YamlInt 44), YamlScalar (YamlBool False)])])])
+
+  describe "parseYamlValue" $ do
+    it "parses structures with indentation" $ do
+      parse
+        parseYamlValue
+        ""
+        (T.unlines
+        [ "k1 :"
+        , "  k11 : "
+        , "    - 1"
+        , "    - 2"
+        , "  k12 :"
+        , "    k121 : [true,1]"
+        ])
+        `shouldBe` Right
+          (YamlMapping [("k1",YamlMapping [("k11",YamlSequence [YamlScalar (YamlInt 1),YamlScalar (YamlInt 2)]),("k12",YamlMapping [("k121",YamlSequence [YamlScalar (YamlBool True),YamlScalar (YamlInt 1)])])])])

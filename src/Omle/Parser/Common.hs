@@ -4,6 +4,7 @@ module Omle.Parser.Common
   ( Parser,
     lineComment,
     scn,
+    sc,
     lexeme,
     symbol,
     comma,
