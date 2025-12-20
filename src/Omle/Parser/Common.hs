@@ -12,6 +12,7 @@ module Omle.Parser.Common
     dash,
     braces,
     brackets,
+    quotes,
     parseKey,
     matchIndent
   )
@@ -23,7 +24,7 @@ import Data.Text (Text)
 import Data.Char (isAlphaNum)
 import Data.Void
 import Text.Megaparsec
-import Text.Megaparsec.Char (space1)
+import Text.Megaparsec.Char (char, space1)
 import qualified Text.Megaparsec.Char.Lexer as L
 
 type Parser = Parsec Void Text
@@ -59,6 +60,9 @@ braces = between (symbol "{") (symbol "}")
 
 brackets :: Parser a -> Parser a
 brackets = between (symbol "[") (symbol "]")
+
+quotes :: Parser a -> Parser a
+quotes = between (char '"') (char '"')
 
 parseKey :: Parser Text
 parseKey = lexeme (takeWhile1P Nothing isAlphaNum)

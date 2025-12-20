@@ -12,9 +12,9 @@ where
 
 import Control.Applicative hiding (many, some)
 import Omle.AST
-import Omle.Parser.Common (Parser, lexeme, symbol)
+import Omle.Parser.Common (Parser, lexeme, symbol, quotes)
 import Text.Megaparsec
-import Text.Megaparsec.Char (char, string', alphaNumChar) -- string' is case-insensitive
+import Text.Megaparsec.Char (string', alphaNumChar) -- string' is case-insensitive
 import qualified Text.Megaparsec.Char.Lexer as L
 
 parseScalar :: Parser YamlScalar
@@ -42,4 +42,4 @@ parseNull :: Parser YamlScalar
 parseNull = YamlNull <$ (lexeme (string' "null") <|> symbol "~")
 
 parseString :: Parser YamlScalar
-parseString = YamlString <$> (lexeme (char '"') *> takeWhileP Nothing (/= '"') <* lexeme (char '"'))
+parseString = YamlString <$> quotes (takeWhileP Nothing (/= '"'))
