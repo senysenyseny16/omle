@@ -3,7 +3,7 @@
 module Parser.YamlScalarSpec (spec) where
 
 import Omle.AST
-import Omle.Parser.YamlScalar (parseBool, parseFloat, parseInt, parseScalar)
+import Omle.Parser.YamlScalar (parseFloat, parseInt, parseBool, parseNull, parseScalar)
 import Test.Hspec
 import Text.Megaparsec
 
@@ -23,6 +23,12 @@ spec = do
     it "parses false" $ do
       parse parseBool "" "false " `shouldBe` Right (YamlBool False)
 
+  describe "parseNull" $ do
+    it "parses null" $ do
+      parse parseNull "" "Null" `shouldBe` Right YamlNull
+    it "parses ~ (null)" $ do
+      parse parseNull "" "~" `shouldBe` Right YamlNull
+
   describe "parseScalar" $ do
     it "parses float" $ do
       parse parseScalar "" "12.34 " `shouldBe` Right (YamlFloat 12.34)
@@ -30,3 +36,5 @@ spec = do
       parse parseScalar "" "1234 " `shouldBe` Right (YamlInt 1234)
     it "parses bool" $ do
       parse parseScalar "" "false " `shouldBe` Right (YamlBool False)
+    it "parses null" $ do
+      parse parseNull "" "NULL" `shouldBe` Right YamlNull
