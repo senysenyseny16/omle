@@ -6,6 +6,8 @@ import Omle.AST
 import Omle.Parser.YamlScalar (parseFloat, parseInt, parseBool, parseNull, parseScalar)
 import Test.Hspec
 import Text.Megaparsec
+import Data.Either (isLeft)
+
 
 spec :: Spec
 spec = do
@@ -18,10 +20,24 @@ spec = do
       parse parseInt "" "80 " `shouldBe` Right (YamlInt 80)
 
   describe "parseBool" $ do
-    it "parses true" $ do
-      parse parseBool "" "true " `shouldBe` Right (YamlBool True)
-    it "parses false" $ do
-      parse parseBool "" "false " `shouldBe` Right (YamlBool False)
+    it "parses true" $
+      parse parseBool "" "True " `shouldBe` Right (YamlBool True)
+    it "parses yes" $
+      parse parseBool "" "yes " `shouldBe` Right (YamlBool True)
+    it "parses on" $
+      parse parseBool "" "on " `shouldBe` Right (YamlBool True)
+    it "parses y" $
+      parse parseBool "" "y " `shouldBe` Right (YamlBool True)
+    it "parses false" $
+      parse parseBool "" "FALSE " `shouldBe` Right (YamlBool False)
+    it "parses no" $
+      parse parseBool "" "no " `shouldBe` Right (YamlBool False)
+    it "parses off" $
+      parse parseBool "" "off " `shouldBe` Right (YamlBool False)
+    it "parses n" $
+      parse parseBool "" "n " `shouldBe` Right (YamlBool False)
+    it "rejects partial match yesX" $
+      parse parseBool "" "yesX" `shouldSatisfy` isLeft
 
   describe "parseNull" $ do
     it "parses null" $ do
