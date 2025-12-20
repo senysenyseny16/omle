@@ -32,13 +32,17 @@ type Parser = Parsec Void Text
 lineComment :: Parser ()
 lineComment = L.skipLineComment "#"
 
-scn :: Parser ()
-scn = L.space space1 lineComment empty
-
+-- Consume horizontal whitespace only (spaces, tabs).
+-- Does NOT consume newlines.
 sc :: Parser ()
 sc = L.space (void $ takeWhile1P Nothing f) lineComment empty
   where
     f x = x == ' ' || x == '\t'
+
+-- Consume horizontal whitespace AND newlines.
+-- Useful for block-sensitive parsing (indentation matters).
+scn :: Parser ()
+scn = L.space space1 lineComment empty
 
 lexeme :: Parser a -> Parser a
 lexeme = L.lexeme scn
