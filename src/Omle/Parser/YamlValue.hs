@@ -56,9 +56,9 @@ parseBlockSequenceItem = do
   indent <- L.indentLevel
   _ <- dash
   -- lookAhead to look without actually consuiming the input
-  nestedMapAhead <- optional (lookAhead (try (parseKey <* colon <* newline))) 
+  nestedMapAhead <- optional (lookAhead (try (parseKey <* colon <* newline)))
   case nestedMapAhead of
-    Just _ -> YamlMapping . (: []) <$> parseBlockMappingItem (Just indent) 
+    Just _ -> YamlMapping . (: []) <$> parseBlockMappingItem (Just indent)
     -- item can be either a nested mapping or some other value,
     -- in case of nested mapping the indentation of the leading
     -- dash should be taken into account
