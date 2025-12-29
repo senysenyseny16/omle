@@ -12,9 +12,8 @@ where
 
 import Control.Applicative hiding (many, some)
 import Omle.AST
-import Omle.Parser.Common (Parser, lexeme, symbol, quotes)
+import Omle.Parser.Common (Parser, lexeme, symbol, exactLiteral, quotes)
 import Text.Megaparsec
-import Text.Megaparsec.Char (string', alphaNumChar) -- string' is case-insensitive
 import qualified Text.Megaparsec.Char.Lexer as L
 
 parseScalar :: Parser YamlScalar
@@ -27,19 +26,16 @@ parseInt :: Parser YamlScalar
 parseInt = YamlInt <$> lexeme L.decimal
 
 parseBool :: Parser YamlScalar
-parseBool = YamlBool True  <$ choice (map (\s -> lexeme (string' s) <* boundary) trueVals)
-  <|> YamlBool False <$ choice (map (\s -> lexeme (string' s) <* boundary) falseVals)
+parseBool = YamlBool True  <$ choice (map exactLiteral trueVals)
+  <|> YamlBool False <$ choice (map exactLiteral falseVals)
   where
-    trueVals  = ["yes", "y", "true", "on"]
-    falseVals = ["no", "n", "false", "off"]
-    boundary  = notFollowedBy alphaNumChar
-      -- Ensures a full boolean literal is consumed and prevents partial matches,
-      -- e.g., "yesX" or "true123" will fail. 
-      -- Note: order of alternatives still matters - longer literals (like "yes") 
-      -- must come before shorter overlapping ones (like "y").
+    trueVals  = ["true", "True", "TRUE"]
+    falseVals = ["false", "False", "FALSE"]
 
 parseNull :: Parser YamlScalar
-parseNull = YamlNull <$ (lexeme (string' "null") <|> symbol "~")
+parseNull = YamlNull <$ (choice (map exactLiteral nullVals) <|> symbol "~")
+  where
+    nullVals = ["null", "Null", "NULL"]
 
 parseString :: Parser YamlScalar
 parseString = YamlString <$> quotes (takeWhileP Nothing (/= '"'))
