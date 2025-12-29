@@ -48,5 +48,14 @@ quotedString = lexeme (quotes (takeWhileP Nothing (/= '"')))
 plainString :: Parser Text 
 plainString = lexeme (takeWhile1P Nothing isPlainChar)
   where
-    isPlainChar c = c /= '#' && not (isControl c)
+    isPlainChar c =
+       c /= '#'       -- comment
+      && c /= ','    -- flow separator
+      && c /= ':'    -- key/value separator
+      && c /= '['
+      && c /= ']'
+      && c /= '{'
+      && c /= '}'
+      && not (isControl c)
+
 
