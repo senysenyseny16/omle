@@ -15,6 +15,8 @@ import Omle.AST
 import Omle.Parser.Common (Parser, lexeme, symbol, exactLiteral, quotes)
 import Text.Megaparsec
 import qualified Text.Megaparsec.Char.Lexer as L
+import Data.Text (Text)
+import Data.Char (isControl)
 
 parseScalar :: Parser YamlScalar
 parseScalar = try parseFloat <|> try parseInt <|> try parseBool <|> parseNull <|> parseString
@@ -38,4 +40,13 @@ parseNull = YamlNull <$ (choice (map exactLiteral nullVals) <|> symbol "~")
     nullVals = ["null", "Null", "NULL"]
 
 parseString :: Parser YamlScalar
-parseString = YamlString <$> quotes (takeWhileP Nothing (/= '"'))
+parseString = YamlString <$> (quotedString <|> plainString)
+
+quotedString :: Parser Text
+quotedString = lexeme (quotes (takeWhileP Nothing (/= '"')))
+
+plainString :: Parser Text 
+plainString = lexeme (takeWhile1P Nothing isPlainChar)
+  where
+    isPlainChar c = c /= '#' && not (isControl c)
+

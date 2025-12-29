@@ -2,12 +2,19 @@
 
 module Parser.YamlScalarSpec (spec) where
 
-import Omle.AST
-import Omle.Parser.YamlScalar (parseFloat, parseInt, parseBool, parseNull, parseScalar, parseString)
-import Test.Hspec
-import Text.Megaparsec
 import Data.Either (isLeft)
-
+import Omle.AST
+import Omle.Parser.YamlScalar (
+  parseBool,
+  parseFloat,
+  parseInt,
+  parseNull,
+  parseScalar,
+  parseString,
+ )
+import Test.Hspec
+import Test.Hspec.Megaparsec
+import Text.Megaparsec
 
 spec :: Spec
 spec = do
@@ -33,9 +40,17 @@ spec = do
     it "parses ~ (null)" $ do
       parse parseNull "" "~" `shouldBe` Right YamlNull
 
-  describe "parseString" $ do 
-    it "parses string" $ do
-      parse parseString "" "\"A string. \"" `shouldBe` Right (YamlString "A string. ")
+  describe "parseString" $ do
+    it "parses quoted string" $ do
+      parse parseString "" "\"A quoted string. \""
+        `shouldBe` Right (YamlString "A quoted string. ")
+    it "parses plain string" $ do
+      parse parseString "" "A plain string --0"
+        `shouldBe` Right (YamlString "A plain string --0")
+    it "parses plain string before comment" $ do
+      parse parseString "" "Hello # comment" `shouldBe` Right (YamlString "Hello ")
+    it "fails on comment sign" $ do
+      parse parseString "" `shouldFailOn` "#"
 
   describe "parseScalar" $ do
     it "parses float" $ do
@@ -45,6 +60,6 @@ spec = do
     it "parses bool" $ do
       parse parseScalar "" "false " `shouldBe` Right (YamlBool False)
     it "parses null" $ do
-      parse parseNull "" "NULL" `shouldBe` Right YamlNull
+      parse parseScalar "" "NULL" `shouldBe` Right YamlNull
     it "parses string" $ do
-      parse parseString "" "\"A string. \"" `shouldBe` Right (YamlString "A string. ")
+      parse parseScalar "" "\"A string. \"" `shouldBe` Right (YamlString "A string. ")
