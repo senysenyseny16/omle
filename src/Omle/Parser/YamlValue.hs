@@ -1,20 +1,31 @@
-module Omle.Parser.YamlValue
-  ( parseYamlValue,
-    parseSequence,
-    parseMapping,
-    parseKey
-  )
+module Omle.Parser.YamlValue (
+  parseYamlValue,
+  parseSequence,
+  parseMapping,
+  parseKey,
+)
 where
+
 import Data.Text (Text)
 import Omle.AST
-import Omle.Parser.Common (Parser, scn, braces, brackets, colon, comma, dash, parseKey, matchIndent)
+import Omle.Parser.Common (
+  Parser,
+  braces,
+  brackets,
+  colon,
+  comma,
+  dash,
+  matchIndent,
+  parseKey,
+  scn,
+ )
 import qualified Omle.Parser.YamlScalar as YamlScalar
 import Text.Megaparsec
 import Text.Megaparsec.Char (newline)
 import qualified Text.Megaparsec.Char.Lexer as L
 
 parseYamlValue :: Parser YamlValue
-parseYamlValue = try parseScalar <|> try parseSequence <|> parseMapping
+parseYamlValue = try parseSequence <|> try parseMapping <|> parseScalar
 
 parseScalar :: Parser YamlValue
 parseScalar = YamlScalar <$> YamlScalar.parseScalar
