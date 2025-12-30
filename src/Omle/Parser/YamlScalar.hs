@@ -14,7 +14,8 @@ import Control.Applicative hiding (many, some)
 import Data.Char (isControl)
 import Data.Text (Text)
 import Omle.AST
-import Omle.Parser.Common (Parser, exactLiteral, lexeme, quotes, symbol)
+import Omle.Parser.Common (Parser, exactLiteral, lexeme, quotes)
+import Omle.Parser.Constants (falseVals, nullVals, trueVals)
 import Text.Megaparsec
 import qualified Text.Megaparsec.Char.Lexer as L
 
@@ -32,14 +33,9 @@ parseBool :: Parser YamlScalar
 parseBool =
   YamlBool True <$ choice (map exactLiteral trueVals)
     <|> YamlBool False <$ choice (map exactLiteral falseVals)
- where
-  trueVals = ["true", "True", "TRUE"]
-  falseVals = ["false", "False", "FALSE"]
 
 parseNull :: Parser YamlScalar
-parseNull = YamlNull <$ (choice (map exactLiteral nullVals) <|> symbol "~")
- where
-  nullVals = ["null", "Null", "NULL"]
+parseNull = YamlNull <$ choice (map exactLiteral nullVals)
 
 parseString :: Parser YamlScalar
 parseString = YamlString <$> (quotedString <|> plainString)
