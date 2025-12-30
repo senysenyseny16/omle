@@ -1,23 +1,27 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Omle.Parser.YamlScalar
-  ( parseScalar,
-    parseFloat,
-    parseInt,
-    parseBool,
-    parseString
-  )
+module Omle.Parser.YamlScalar (
+  parseScalar,
+  parseFloat,
+  parseInt,
+  parseBool,
+  parseNull,
+  parseString,
+)
 where
 
 import Control.Applicative hiding (many, some)
+import Data.Char (isControl)
+import Data.Text (Text)
 import Omle.AST
-import Omle.Parser.Common (Parser, lexeme)
+import Omle.Parser.Common (Parser, exactLiteral, lexeme, quotes)
+import Omle.Parser.Constants (falseVals, nullVals, trueVals)
 import Text.Megaparsec
-import Text.Megaparsec.Char (string, char)
 import qualified Text.Megaparsec.Char.Lexer as L
 
 parseScalar :: Parser YamlScalar
-parseScalar = try parseFloat <|> try parseInt <|> try parseBool <|> parseString
+parseScalar =
+  try parseFloat <|> try parseInt <|> try parseBool <|> parseNull <|> parseString
 
 parseFloat :: Parser YamlScalar
 parseFloat = YamlFloat <$> lexeme L.float
@@ -26,7 +30,28 @@ parseInt :: Parser YamlScalar
 parseInt = YamlInt <$> lexeme L.decimal
 
 parseBool :: Parser YamlScalar
-parseBool = (lexeme (string "true") >> return (YamlBool True)) <|> (lexeme (string "false") >> return (YamlBool False))
+parseBool =
+  YamlBool True <$ choice (map exactLiteral trueVals)
+    <|> YamlBool False <$ choice (map exactLiteral falseVals)
+
+parseNull :: Parser YamlScalar
+parseNull = YamlNull <$ choice (map exactLiteral nullVals)
 
 parseString :: Parser YamlScalar
-parseString = YamlString <$> (lexeme (char '"') *> takeWhileP Nothing (/= '"') <* lexeme (char '"'))
+parseString = YamlString <$> (quotedString <|> plainString)
+
+quotedString :: Parser Text
+quotedString = lexeme (quotes (takeWhileP Nothing (/= '"')))
+
+plainString :: Parser Text
+plainString = lexeme (takeWhile1P Nothing isPlainChar)
+ where
+  isPlainChar c =
+    c /= '#' -- comment
+      && c /= ',' -- flow separator
+      && c /= ':' -- key/value separator
+      && c /= '['
+      && c /= ']'
+      && c /= '{'
+      && c /= '}'
+      && not (isControl c)

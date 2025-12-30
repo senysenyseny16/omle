@@ -14,7 +14,7 @@ input :: Parser Input
 input = Input <$> strArgument (metavar "INPUT_FILE" <> help "File to parse")
 
 yamlParse :: Input -> IO ()
-yamlParse Input {inputFile = inputFile'} = do
+yamlParse Input{inputFile = inputFile'} = do
   content <- DTIO.readFile inputFile'
   case parse (scn *> parseYamlValue) "" content of
     Left err -> putStrLn $ "error: " ++ show err
@@ -22,5 +22,5 @@ yamlParse Input {inputFile = inputFile'} = do
 
 main :: IO ()
 main = yamlParse =<< execParser opts
-  where
-    opts = info (input <**> helper) (fullDesc <> progDesc "YAML formatter and linter")
+ where
+  opts = info (input <**> helper) (fullDesc <> progDesc "YAML formatter and linter")

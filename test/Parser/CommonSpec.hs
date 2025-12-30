@@ -2,7 +2,8 @@
 
 module Parser.CommonSpec (spec) where
 
-import Omle.Parser.Common (scn, sc)
+import Data.Either (isLeft)
+import Omle.Parser.Common (exactLiteral, sc, scn)
 import Test.Hspec
 import Test.Hspec.Megaparsec
 import Text.Megaparsec
@@ -22,3 +23,13 @@ spec = do
       parse (sc *> newline) "" `shouldSucceedOn` "    \n"
     it "skips line comment" $ do
       parse sc "" `shouldSucceedOn` "# a comment line"
+  describe "exactLiteral parser" $ do
+    it "parses the given exact literal" $ do
+      parse (exactLiteral "something") "" "something"
+        `shouldBe` Right "something"
+    it "fails when followed by alphanumeric characters" $ do
+      parse (exactLiteral "something") "" "somethingx12"
+        `shouldSatisfy` isLeft
+    it "consumes trailing whitespace" $ do
+      parse (exactLiteral "something") "" "something   "
+        `shouldBe` Right "something"
