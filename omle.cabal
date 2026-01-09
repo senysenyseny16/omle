@@ -1,6 +1,6 @@
 cabal-version: 2.2
 
--- This file has been generated from package.yaml by hpack version 0.37.0.
+-- This file has been generated from package.yaml by hpack version 0.38.1.
 --
 -- see: https://github.com/sol/hpack
 
@@ -26,8 +26,10 @@ library
   exposed-modules:
       Omle.AST
       Omle.Parser.Common
+      Omle.Parser.Constants
       Omle.Parser.YamlScalar
       Omle.Parser.YamlValue
+      Omle.Render
   other-modules:
       Paths_omle
   autogen-modules:
